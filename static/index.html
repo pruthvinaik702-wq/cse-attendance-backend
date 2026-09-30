@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CSE Attendance Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#eef2f6;--card:#fff;--fg:#0f2a43;--mut:#5b6f82;--bd:#d5dee7;--acc:#0e7c66;--accfg:#fff;--bad:#c93b3b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 Figtree,system-ui,sans-serif}
+main{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.4rem;font-weight:800;margin:0}.sub{color:var(--mut);margin:2px 0 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;margin-bottom:14px}
+h2{font-size:1.05rem;margin:0 0 10px}
+label{display:block;font-size:.85rem;color:var(--mut);margin:10px 0 4px}
+select,input{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit}
+.btn{padding:10px 16px;border:0;border-radius:10px;background:var(--acc);color:var(--accfg);font:600 15px Figtree,sans-serif;cursor:pointer;margin-top:10px;margin-right:6px}
+.btn.alt{background:transparent;color:var(--fg);border:1px solid var(--bd)}
+.btn.bad{background:var(--bad);color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+nav button{flex:1;min-width:80px;padding:9px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;font:600 14px Figtree,sans-serif;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8rem;font-weight:600;border:1px solid var(--bd)}
+.msg{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);font-weight:600}
+.msg.ok{border-color:var(--acc);color:var(--acc)}.msg.bad{border-color:var(--bad);color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:.92rem}th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--bd)}
+.tbl{overflow-x:auto}
+.stage{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.qrbox{background:#fff;padding:12px;border-radius:12px;border:1px solid var(--bd)}
+.big{font:800 1.8rem/1 Figtree,sans-serif;letter-spacing:.06em}
+small{color:var(--mut)}.hide{display:none}
+.hint{font-size:.8rem;color:var(--mut);margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>CSE Attendance Portal</h1>
+<p class="sub">Second Year, Third Year and Final Year — Admin, Professor and Student access.</p>
+
+<section id="login">
+<div class="card"><h2>Sign in</h2>
+<label for="role">Portal</label>
+<select id="role"><option value="admin">Admin</option><option value="professor">Professor</option><option value="student">Student</option></select>
+<label for="uid">ID</label><input id="uid" autocomplete="off">
+<label for="pw">Password</label><input id="pw" type="password">
+<button class="btn" id="signin">Sign in</button><div id="lmsg"></div>
+<p class="hint">Seed logins — Admin: admin / admin123 · Professor: EMP001 / EMP001 · Student: 401 / 401</p>
+</div>
+</section>
+
+<section id="app" class="hide">
+<div class="topbar"><span class="pill" id="who"></span><button class="btn alt" id="signout">Sign out</button></div>
+
+<div id="admin" class="hide">
+<nav><button data-t="tt" aria-selected="true">Timetable</button><button data-t="us">Users</button><button data-t="rp">Reports</button></nav>
+<div id="a-tt">
+<div class="card"><h2>Add a timetable slot</h2>
+<div class="row"><div><label>Day</label><select id="tday"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option></select></div>
+<div><label>Start</label><input id="tstart" type="time" value="09:00"></div><div><label>End</label><input id="tend" type="time" value="10:00"></div></div>
+<div class="row"><div><label>Year</label><select id="tyear"></select></div><div><label>Division</label><select id="tdiv"></select></div><div><label>Professor</label><select id="tprof"></select></div></div>
+<label>Subject</label><input id="tsubj" placeholder="e.g. Data Structures">
+<button class="btn" id="taddbtn">Add slot</button></div>
+<div class="card"><h2>Weekly timetable</h2><div class="tbl"><table id="ttall"></table></div></div></div>
+
+<div id="a-us" class="hide">
+<div class="card"><h2>Add a professor</h2><div class="row"><input id="pfid" placeholder="Employee ID"><input id="pfname" placeholder="Full name"></div><button class="btn" id="pfadd">Add professor</button></div>
+<div class="card"><h2>Professors</h2><div class="tbl"><table id="uprof"></table></div></div>
+<div class="card"><h2>Add a student</h2><div class="row"><input id="stroll" placeholder="Roll number"><input id="stname" placeholder="Full name"></div>
+<div class="row"><input id="stgrn" placeholder="GRN"><select id="styear"></select><select id="stdiv"></select></div><button class="btn" id="stadd">Add student</button></div>
+<div class="card"><h2>Students</h2><label>Filter by class</label><select id="ufilter"></select><div class="tbl"><table id="ustud"></table></div></div></div>
+
+<div id="a-rp" class="hide">
+<div class="card"><h2>Attendance — all sessions</h2><div class="tbl"><table id="rpall"></table></div></div>
+<div class="card"><h2>Monthly % by student</h2><label>Class</label><select id="rpclass"></select><div class="tbl"><table id="rpstud"></table></div></div></div>
+</div>
+
+<div id="professor" class="hide">
+<div class="card"><h2>My classes</h2><div class="tbl"><table id="passign"></table></div></div>
+<div class="card hide" id="plive"><h2>Live session — <span id="plivesubj"></span></h2>
+<div class="stage"><div class="qrbox"><div id="qr"></div></div><div><div class="big" id="ptok">------</div><small>Refreshes every 15s.</small><p><span class="pill" id="pcnt">0 present</span></p></div></div>
+<div class="tbl"><table id="proll"></table></div><button class="btn bad" id="pstop">Close session</button></div>
+<div class="card"><h2>My past sessions</h2><div class="tbl"><table id="psess"></table></div></div>
+</div>
+
+<div id="student" class="hide">
+<div class="card"><h2>Today's class</h2><div id="stoday"></div></div>
+<div class="card hide" id="smarkc"><h2>Mark attendance</h2><label>Code from teacher's screen</label><input id="scode" autocomplete="off">
+<button class="btn" id="smark">Mark present</button><div id="smsg"></div></div>
+<div class="card"><h2>My attendance</h2><div id="sstat"></div></div>
+</div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const api=(url,opt={})=>fetch(url,{headers:{'Content-Type':'application/json'},credentials:'same-origin',...opt}).then(r=>r.json().then(b=>{if(!r.ok)throw new Error(b.error||'Request failed');return b}));
+let user=null,meta={years:['SY','TY','BE'],divs:{SY:['A','B','C','D'],TY:['A','B'],BE:['A','B']}};
+
+$('signin').onclick=async()=>{
+ try{user=await api('/api/login',{method:'POST',body:JSON.stringify({role:$('role').value,login_id:$('uid').value.trim(),password:$('pw').value})});enter()}
+ catch(e){$('lmsg').innerHTML=`<div class="msg bad">${e.message}</div>`}};
+async function enter(){
+ meta=await api('/api/meta');
+ $('login').classList.add('hide');$('app').classList.remove('hide');
+ ['admin','professor','student'].forEach(r=>$(r).classList.toggle('hide',r!==user.role));
+ $('who').textContent=user.name+' · '+({admin:'Admin',professor:'Professor',student:'Student'})[user.role];
+ if(user.role==='admin')initAdmin();if(user.role==='professor')initProf();if(user.role==='student')initStudent()}
+$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')$('signin').click()});
+$('signout').onclick=async()=>{await api('/api/logout',{method:'POST'});location.reload()};
+
+// ---------- ADMIN ----------
+function yearOpts(sel){$(sel).innerHTML=meta.years.map(y=>`<option>${y}</option>`).join('')}
+function fillDivs(ysel,dsel){$(dsel).innerHTML=meta.divs[$(ysel).value].map(d=>`<option>${d}</option>`).join('')}
+async function initAdmin(){
+ yearOpts('tyear');fillDivs('tyear','tdiv');$('tyear').onchange=()=>fillDivs('tyear','tdiv');
+ yearOpts('styear');fillDivs('styear','stdiv');$('styear').onchange=()=>fillDivs('styear','stdiv');
+ document.querySelectorAll('#admin nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#admin nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  ['tt','us','rp'].forEach(t=>$('a-'+t).classList.toggle('hide',t!==b.dataset.t));drawAdmin()});
+ await drawAdmin()}
+async function drawAdmin(){
+ const profs=await api('/api/admin/users?role=professor');
+ $('tprof').innerHTML=profs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+ const tt=await api('/api/admin/timetable');
+ $('ttall').innerHTML='<tr><th>Day</th><th>Time</th><th>Year/Div</th><th>Subject</th><th>Professor</th><th></th></tr>'+
+  tt.map(t=>`<tr><td>${t.day}</td><td>${t.start}-${t.end}</td><td>${t.year}-${t.div}</td><td>${t.subject}</td><td>${t.professor_name||'-'}</td><td><button class="btn alt" style="margin:0;padding:4px 10px" data-id="${t.id}">Delete</button></td></tr>`).join('');
+ $('ttall').querySelectorAll('button').forEach(b=>b.onclick=async()=>{await api('/api/admin/timetable/'+b.dataset.id,{method:'DELETE'});drawAdmin()});
+
+ $('uprof').innerHTML='<tr><th>ID</th><th>Name</th><th></th></tr>'+profs.map(p=>`<tr><td>${p.login_id}</td><td>${p.name}</td><td><button class="btn alt" style="margin:0;padding:4px 10px" data-id="${p.id}">Remove</button></td></tr>`).join('');
+ $('uprof').querySelectorAll('button').forEach(b=>b.onclick=async()=>{await api('/api/admin/users/'+b.dataset.id,{method:'DELETE'});drawAdmin()});
+
+ const classes=[];meta.years.forEach(y=>meta.divs[y].forEach(d=>classes.push(y+'-'+d)));
+ $('ufilter').innerHTML='<option value="">All</option>'+classes.map(c=>`<option>${c}</option>`).join('');
+ $('rpclass').innerHTML=classes.map(c=>`<option>${c}</option>`).join('');
+ await drawStudentsTable();await drawReports()}
+$('ufilter').onchange=drawStudentsTable;
+async function drawStudentsTable(){
+ const students=await api('/api/admin/users?role=student');
+ const f=$('ufilter').value,rows=students.filter(s=>!f||(s.year+'-'+s.div)===f);
+ $('ustud').innerHTML='<tr><th>Roll</th><th>Name</th><th>GRN</th><th>Class</th><th></th></tr>'+
+  rows.map(s=>`<tr><td>${s.login_id}</td><td>${s.name}</td><td>${s.grn||'-'}</td><td>${s.year}-${s.div}</td><td><button class="btn alt" style="margin:0;padding:4px 10px" data-id="${s.id}">Remove</button></td></tr>`).join('');
+ $('ustud').querySelectorAll('button').forEach(b=>b.onclick=async()=>{await api('/api/admin/users/'+b.dataset.id,{method:'DELETE'});drawAdmin()})}
+$('taddbtn').onclick=async()=>{if(!$('tsubj').value.trim())return;
+ await api('/api/admin/timetable',{method:'POST',body:JSON.stringify({day:$('tday').value,start:$('tstart').value,end:$('tend').value,year:$('tyear').value,div:$('tdiv').value,subject:$('tsubj').value.trim(),professor_id:+$('tprof').value})});
+ $('tsubj').value='';drawAdmin()};
+$('pfadd').onclick=async()=>{if(!$('pfid').value||!$('pfname').value)return;
+ await api('/api/admin/users',{method:'POST',body:JSON.stringify({role:'professor',login_id:$('pfid').value.trim(),name:$('pfname').value.trim()})});
+ $('pfid').value='';$('pfname').value='';drawAdmin()};
+$('stadd').onclick=async()=>{if(!$('stroll').value||!$('stname').value)return;
+ await api('/api/admin/users',{method:'POST',body:JSON.stringify({role:'student',login_id:$('stroll').value.trim(),name:$('stname').value.trim(),grn:$('stgrn').value.trim(),year:$('styear').value,div:$('stdiv').value})});
+ $('stroll').value='';$('stname').value='';$('stgrn').value='';drawAdmin()};
+async function drawReports(){
+ const sess=await api('/api/admin/reports/sessions');
+ $('rpall').innerHTML='<tr><th>Date</th><th>Class</th><th>Subject</th><th>Present</th></tr>'+
+  (sess.map(s=>`<tr><td>${new Date(s.created_at+'Z').toLocaleDateString()}</td><td>${s.year}-${s.div}</td><td>${s.subject}</td><td>${s.present}</td></tr>`).join('')||'<tr><td colspan=4>No sessions yet.</td></tr>');
+ await drawRpStud()}
+$('rpclass').onchange=drawRpStud;
+async function drawRpStud(){
+ const [y,dv]=($('rpclass').value||'').split('-');if(!y)return;
+ const rows=await api(`/api/admin/reports/students?year=${y}&div=${dv}`);
+ $('rpstud').innerHTML='<tr><th>Roll</th><th>Name</th><th>Attended</th><th>%</th></tr>'+
+  rows.map(r=>`<tr><td>${r.login_id}</td><td>${r.name}</td><td>${r.attended}/${r.total}</td><td style="color:${r.pct<75?'var(--bad)':'var(--acc)'}">${r.pct}%</td></tr>`).join('')}
+
+// ---------- PROFESSOR ----------
+async function initProf(){
+ const a=await api('/api/prof/assignments');
+ $('passign').innerHTML='<tr><th>Year/Div</th><th>Subject</th><th></th></tr>'+
+  a.map((x,i)=>`<tr><td>${x.year}-${x.div}</td><td>${x.subject}</td><td><button class="btn" style="margin:0;padding:6px 12px" data-i="${i}">Start session</button></td></tr>`).join('');
+ $('passign').querySelectorAll('button').forEach(b=>b.onclick=()=>startSession(a[b.dataset.i]));
+ await drawPast();await pollCurrent()}
+async function drawPast(){
+ const s=await api('/api/prof/sessions');
+ $('psess').innerHTML='<tr><th>Date</th><th>Class</th><th>Subject</th><th>Present</th></tr>'+
+  (s.map(x=>`<tr><td>${new Date(x.created_at+'Z').toLocaleString()}</td><td>${x.year}-${x.div}</td><td>${x.subject}</td><td>${x.present}</td></tr>`).join('')||'<tr><td colspan=4>No sessions yet.</td></tr>')}
+async function startSession(a){await api('/api/prof/session/start',{method:'POST',body:JSON.stringify(a)});await pollCurrent()}
+$('pstop').onclick=async()=>{await api('/api/prof/session/stop',{method:'POST'});$('plive').classList.add('hide');drawPast()};
+async function pollCurrent(){
+ const c=await api('/api/prof/session/current');
+ if(!c){$('plive').classList.add('hide');return}
+ $('plive').classList.remove('hide');$('plivesubj').textContent=c.year+'-'+c.div+' · '+c.subject;
+ const q=$('qr');if($('ptok').textContent!==c.token){q.innerHTML='';try{new QRCode(q,{text:c.id+'|'+c.token,width:150,height:150})}catch(e){}}
+ $('ptok').textContent=c.token;
+ const present=c.roll.filter(r=>r.present).length;$('pcnt').textContent=present+' of '+c.roll.length+' present';
+ $('proll').innerHTML='<tr><th>Roll</th><th>Name</th><th>Status</th></tr>'+c.roll.map(r=>`<tr><td>${r.login_id}</td><td>${r.name}</td><td style="color:${r.present?'var(--acc)':'var(--bad)'}">${r.present?'Present':'Absent'}</td></tr>`).join('')}
+setInterval(()=>{if(user&&user.role==='professor'&&!$('plive').classList.contains('hide'))pollCurrent()},2000);
+
+// ---------- STUDENT ----------
+async function initStudent(){await drawToday();await drawStats()}
+async function drawToday(){
+ const d=await api('/api/student/today');
+ if(!d.slot){$('stoday').innerHTML='<p>No lecture is scheduled right now.</p>';$('smarkc').classList.add('hide');return}
+ $('stoday').innerHTML=`<p><b>${d.slot.subject}</b><br><small>${d.slot.start}-${d.slot.end}</small></p>`;
+ $('smarkc').classList.toggle('hide',!d.session_open);
+ if(d.marked){$('smsg').innerHTML='<div class="msg ok">Already marked present.</div>';$('scode').disabled=$('smark').disabled=true}
+ else{$('scode').disabled=$('smark').disabled=false;$('smsg').innerHTML=''}}
+$('smark').onclick=async()=>{
+ try{await api('/api/student/mark',{method:'POST',body:JSON.stringify({code:$('scode').value})});$('smsg').innerHTML='<div class="msg ok">Marked present.</div>';await drawToday();await drawStats()}
+ catch(e){$('smsg').innerHTML=`<div class="msg bad">${e.message}</div>`}};
+async function drawStats(){const s=await api('/api/student/stats');
+ $('sstat').innerHTML=`<p>${s.attended} of ${s.total} lectures attended — <b style="color:${s.pct<75?'var(--bad)':'var(--acc)'}">${s.pct}%</b></p>`}
+setInterval(()=>{if(user&&user.role==='student')drawToday()},4000);
+
+// restore login after page refresh
+api('/api/me').then(u=>{if(u){user=u;enter()}}).catch(()=>{});
+</script>
+</body>
+</html>
