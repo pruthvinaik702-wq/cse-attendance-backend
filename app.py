@@ -22,7 +22,7 @@ class User(db.Model):
     name = db.Column(db.String(120))
     password_hash = db.Column(db.String(200))
     year = db.Column(db.String(20), nullable=True)
-    div = db.Column(db.String(4), nullable=True)
+    div = db.Column(db.String(20), nullable=True)
     grn = db.Column(db.String(40), nullable=True)
 
     def check(self, pw):
@@ -387,11 +387,11 @@ def seed():
     students = [("401", "Aditya Jayram Bhosale", "25UGCS25329"), ("402", "Swetank Kumar", "25UGCS24778"),
                 ("403", "Santosh Kumar", "25UGCS25127"), ("404", "Suhana Shaikh", "25UGCS23988")]
     for roll, name, grn in students:
-        db.session.add(User(role="student", login_id=roll, name=name, grn=grn, year="SY", div="D",
+        db.session.add(User(role="student", login_id=roll, name=name, grn=grn, year="Second Year", div="D",
                              password_hash=generate_password_hash(roll)))
-    db.session.add(Timetable(day="Mon", start="09:00", end="10:00", year="SY", div="D",
+    db.session.add(Timetable(day="Mon", start="09:00", end="10:00", year="Second Year", div="D",
                               subject="Data Structures", professor_id=profs[0].id))
-    db.session.add(Timetable(day="Tue", start="11:00", end="12:00", year="SY", div="D",
+    db.session.add(Timetable(day="Tue", start="11:00", end="12:00", year="Second Year", div="D",
                               subject="Object Oriented Programming", professor_id=profs[1].id))
     db.session.commit()
 
