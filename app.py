@@ -4,13 +4,18 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder="static")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///attendance.db")
+db_url = os.environ.get("DATABASE_URL", "sqlite:///attendance.db")
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", secrets.token_hex(16))
 db = SQLAlchemy(app)
 
 ROT_SECONDS = 30
 YEARS = ["Second Year", "Third Year", "Final Year"]
-DIVS = {"SY": ["A", "B", "C", "D"], "TY": ["A", "B","C","D"], "FY": ["A", "B","C","D"]}
+_ABCD = ["A", "B", "C", "D"]
+DIVS = {"SY": _ABCD, "TY": _ABCD, "FY": _ABCD,
+        "Second Year": _ABCD, "Third Year": _ABCD, "Final Year": _ABCD}
 DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 
@@ -22,7 +27,7 @@ class User(db.Model):
     name = db.Column(db.String(120))
     password_hash = db.Column(db.String(200))
     year = db.Column(db.String(20), nullable=True)
-    div = db.Column(db.String(20), nullable=True)
+    div = db.Column(db.String(4), nullable=True)
     grn = db.Column(db.String(40), nullable=True)
 
     def check(self, pw):
@@ -118,6 +123,25 @@ def logout():
 def me():
     u = current_user()
     return jsonify(u.public() if u else None)
+
+
+@app.post("/api/change-password")
+def change_password():
+    u = current_user()
+    if not u:
+        return jsonify({"error": "Please sign in first."}), 401
+    d = request.json or {}
+    old_pw = d.get("old_password", "")
+    new_pw = d.get("new_password", "")
+    if not u.check(old_pw):
+        return jsonify({"error": "Current password is incorrect."}), 400
+    if len(new_pw) < 6:
+        return jsonify({"error": "New password must be at least 6 characters."}), 400
+    if new_pw == old_pw:
+        return jsonify({"error": "New password must be different from the current one."}), 400
+    u.password_hash = generate_password_hash(new_pw)
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 # ---------- admin: timetable ----------
@@ -397,6 +421,7 @@ def seed():
 
 
 with app.app_context():
+    db.drop_all()   # ONE-TIME RESET: delete this line after the first successful deploy
     db.create_all()
     seed()
 
