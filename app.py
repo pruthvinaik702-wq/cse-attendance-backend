@@ -21,7 +21,7 @@ class User(db.Model):
     login_id = db.Column(db.String(40), unique=True)
     name = db.Column(db.String(120))
     password_hash = db.Column(db.String(200))
-    year = db.Column(db.String(4), nullable=True)
+    year = db.Column(db.String(20), nullable=True)
     div = db.Column(db.String(4), nullable=True)
     grn = db.Column(db.String(40), nullable=True)
 
@@ -38,7 +38,7 @@ class Timetable(db.Model):
     day = db.Column(db.String(4))
     start = db.Column(db.String(5))
     end = db.Column(db.String(5))
-    year = db.Column(db.String(4))
+    year = db.Column(db.String(20))
     div = db.Column(db.String(4))
     subject = db.Column(db.String(120))
     professor_id = db.Column(db.Integer, db.ForeignKey("user.id"))
@@ -53,7 +53,7 @@ class Timetable(db.Model):
 class Session_(db.Model):
     __tablename__ = "session_"
     id = db.Column(db.Integer, primary_key=True)
-    year = db.Column(db.String(4))
+    year = db.Column(db.String(20))
     div = db.Column(db.String(4))
     subject = db.Column(db.String(120))
     professor_id = db.Column(db.Integer, db.ForeignKey("user.id"))
