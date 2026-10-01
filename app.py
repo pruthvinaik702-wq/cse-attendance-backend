@@ -10,7 +10,7 @@ db = SQLAlchemy(app)
 
 ROT_SECONDS = 30
 YEARS = ["Second Year", "Third Year", "Final Year"]
-DIVS = {"SY": ["A", "B", "C", "D"], "TY": ["A", "B","C","D"], "BE": ["A", "B","C","D"]}
+DIVS = {"SY": ["A", "B", "C", "D"], "TY": ["A", "B","C","D"], "FY": ["A", "B","C","D"]}
 DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 
