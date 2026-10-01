@@ -8,8 +8,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:/
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", secrets.token_hex(16))
 db = SQLAlchemy(app)
 
-ROT_SECONDS = 15
-YEARS = ["SY", "TY", "BE"]
+ROT_SECONDS = 30
+YEARS = ["Second Year", "Third Year", "Final Year"]
 DIVS = {"SY": ["A", "B", "C", "D"], "TY": ["A", "B"], "BE": ["A", "B"]}
 DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
